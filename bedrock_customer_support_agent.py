@@ -3,7 +3,7 @@
 # ## Preparation
 import subprocess
 import sys
-subprocess.check_call([sys.executable, 'sh','./ro_shared_data/reset.sh'])
+subprocess.check_call([sys.executable, 'sh','./reset.sh'])
 
 import os
 import boto3
@@ -19,6 +19,28 @@ knowledgeBaseId = os.environ['KNOWLEDGEBASEID']
 bedrock_agent = boto3.client(service_name='bedrock-agent', region_name=region_name)
 bedrock_agent_runtime = boto3.client(service_name='bedrock-agent-runtime', region_name=region_name)
 
+def prepare_agent(agentId,agentAliasId,agentAliasName='CustomerSupportAgentAlias'):
+
+    bedrock_agent.prepare_agent(
+        agentId=agentId
+    )
+
+    wait_for_agent_status(
+        agentId=agentId,
+        targetStatus='PREPARED'
+    )
+
+    bedrock_agent.update_agent_alias(
+        agentId=agentId,
+        agentAliasId=agentAliasId,
+        agentAliasName=agentAliasName,
+    )
+
+    wait_for_agent_alias_status(
+        agentId=agentId,
+        agentAliasId=agentAliasId,
+        targetStatus='PREPARED'
+    )
 
 
 
@@ -120,27 +142,8 @@ wait_for_action_group_status(
     targetStatus='ENABLED'
 )
 
-bedrock_agent.prepare_agent(
-    agentId=agentId
-)
 
-wait_for_agent_status(
-    agentId=agentId,
-    targetStatus='PREPARED'
-)
-
-bedrock_agent.update_agent_alias(
-    agentId=agentId,
-    agentAliasId=agentAliasId,
-    agentAliasName='MyAgentAlias',
-)
-
-wait_for_agent_alias_status(
-    agentId=agentId,
-    agentAliasId=agentAliasId,
-    targetStatus='PREPARED'
-)
-
+prepare_agent(agentId,agentAliasId)
 ########################################################### # Performing calculations # ###########################################################
 
 
@@ -250,26 +253,9 @@ wait_for_action_group_status(
 
 
 # #### prepare agent and alias to add new action group
-prepare_agent_response = bedrock_agent.prepare_agent(
-    agentId=agentId
-)
 
-wait_for_agent_status(
-    agentId=agentId,
-    targetStatus='PREPARED'
-)
+prepare_agent(agentId,agentAliasId,'test')
 
-bedrock_agent.update_agent_alias(
-    agentId=agentId,
-    agentAliasId=agentAliasId,
-    agentAliasName='test',
-)
-
-wait_for_agent_alias_status(
-    agentId=agentId,
-    agentAliasId=agentAliasId,
-    targetStatus='PREPARED'
-)
 
 ############################################################## #  Guard Rails # ##############################################################
 
@@ -364,27 +350,7 @@ bedrock_agent.update_agent(
 
 
 # ### Prepare agent and alias
-
-bedrock_agent.prepare_agent(
-    agentId=agentId
-)
-
-wait_for_agent_status(
-    agentId=agentId,
-    targetStatus='PREPARED'
-)
-
-bedrock_agent.update_agent_alias(
-    agentId=agentId,
-    agentAliasId=agentAliasId,
-    agentAliasName='MyAgentAlias',
-)
-
-wait_for_agent_alias_status(
-    agentId=agentId,
-    agentAliasId=agentAliasId,
-    targetStatus='PREPARED'
-)
+prepare_agent(agentId,agentAliasId)
 
 ########################################################### # Read the FAQ Manual # ###########################################################
 
@@ -414,27 +380,7 @@ associate_agent_knowledge_base_response = bedrock_agent.associate_agent_knowledg
 
 # ### Prepare agent and alias
 
-bedrock_agent.prepare_agent(
-    agentId=agentId
-)
-
-wait_for_agent_status(
-    agentId=agentId,
-    targetStatus='PREPARED'
-)
-
-bedrock_agent.update_agent_alias(
-    agentId=agentId,
-    agentAliasId=agentAliasId,
-    agentAliasName='MyAgentAlias',
-)
-
-wait_for_agent_alias_status(
-    agentId=agentId,
-    agentAliasId=agentAliasId,
-    targetStatus='PREPARED'
-)
-
+prepare_agent(agentId,agentAliasId)
 
 # ### Try it out
 
